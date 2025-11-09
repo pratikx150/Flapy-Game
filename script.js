@@ -6,8 +6,6 @@ let gravity = 0.5;
 let bird = document.querySelector('.bird');
 let follower1 = document.querySelector('.follower1');
 let follower2 = document.querySelector('.follower2');
-let background = document.querySelector('.background').getBoundingClientRect();
-
 let score_val = document.querySelector('.score_val');
 let message = document.querySelector('.message');
 let score_title = document.querySelector('.score_title');
@@ -20,16 +18,33 @@ let startSound = document.getElementById('startSound');
 let catchSound = document.getElementById('catchSound');
 
 // === Audio setup ===
-flySound.volume = 0.2; // lower flying sound
+flySound.volume = 0.2;
 loseSound.volume = 1.0;
+
+let audioUnlocked = false;
 
 // === Game state ===
 let game_state = 'Start';
+let backgroundRect = { top: 0, bottom: window.innerHeight };
 
-// === Start sound on load ===
-window.addEventListener('load', () => {
-  startSound.play();
-});
+// Update background rect
+function updateBackgroundRect() {
+  backgroundRect.bottom = window.innerHeight;
+}
+
+// === Audio Unlock on First Touch (Mobile Fix) ===
+let unlockAudios = () => {
+  if (audioUnlocked) return;
+  [flySound, loseSound, startSound, catchSound].forEach(audio => {
+    audio.volume = 0;
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch(() => {}); // Ignore errors
+    audio.volume = audio === flySound ? 0.2 : 1.0; // Restore volume
+  });
+  audioUnlocked = true;
+};
 
 // === Controls ===
 start_btn.addEventListener('click', startGame);
@@ -39,28 +54,31 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// === Touch Controls (mobile tap to jump/start) ===
+// === Touch Controls ===
 let lastTouchTime = 0;
 document.addEventListener('touchstart', (e) => {
-  e.preventDefault(); // Prevent default touch behaviors
+  e.preventDefault();
+  unlockAudios(); // Unlock audios on first touch
   const currentTime = Date.now();
-  if (currentTime - lastTouchTime < 300) return; // Debounce to prevent rapid taps
+  if (currentTime - lastTouchTime < 300) return;
   lastTouchTime = currentTime;
 
   if (game_state === 'Start') {
     startGame();
   } else if (game_state === 'Play') {
-    // Simulate jump key
     let jumpEvent = new KeyboardEvent('keydown', { key: ' ' });
     document.dispatchEvent(jumpEvent);
   }
 }, { passive: false });
 
+window.addEventListener('resize', updateBackgroundRect);
+updateBackgroundRect();
+
 function startGame() {
   if (game_state !== 'Play') {
     document.querySelectorAll('.pipe_sprite').forEach((e) => e.remove());
     bird.style.top = '40vh';
-    bird.style.left = '20vw'; // Adjusted for mobile centering
+    bird.style.left = '20vw';
 
     follower1.style.left = '10vw';
     follower2.style.left = '5vw';
@@ -76,11 +94,17 @@ function startGame() {
     follower1.classList.remove('hidden');
     follower2.classList.remove('hidden');
 
+    // === Play ALL Audio in User Gesture Context ===
     loseSound.pause();
     loseSound.currentTime = 0;
     flySound.currentTime = 0;
     catchSound.currentTime = 0;
+    startSound.currentTime = 0;
 
+    startSound.play().then(() => {
+      startSound.pause();
+      startSound.currentTime = 0;
+    });
     flySound.play();
     catchSound.play();
 
@@ -93,32 +117,40 @@ function play() {
   let bird_dy = 0;
   let bird_props = bird.getBoundingClientRect();
   let pipe_seperation = 0;
-  let pipe_gap = 45; // Increased for mobile playability
+  let pipe_gap = 45;
 
-  // === Bird gravity & controls ===
+  // Bird gravity & controls (prevent keydown spam)
+  let keysPressed = new Set();
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'ArrowUp' || e.key === ' ') && !keysPressed.has(e.key)) {
+      keysPressed.add(e.key);
+      bird_dy = -7.6;
+    }
+    if (e.key === 'Enter' && game_state !== 'Play') {
+      startGame();
+    }
+  });
+  document.addEventListener('keyup', (e) => {
+    keysPressed.delete(e.key);
+  });
+
   function apply_gravity() {
     if (game_state !== 'Play') return;
 
     bird_dy += gravity;
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowUp' || e.key === ' ') {
-        bird_dy = -7.6;
-      }
-    });
-
     bird_props = bird.getBoundingClientRect();
-    if (bird_props.top <= 0 || bird_props.bottom >= background.bottom) {
+    if (bird_props.top <= 0 || bird_props.bottom >= backgroundRect.bottom) {
       endGame();
       return;
     }
 
-    bird.style.top = bird_props.top + bird_dy + 'px';
+    bird.style.top = (bird_props.top + bird_dy) + 'px';
     bird_props = bird.getBoundingClientRect();
     requestAnimationFrame(apply_gravity);
   }
   requestAnimationFrame(apply_gravity);
 
-  // === Pipe creation ===
+  // Pipe creation & movement (unchanged, but with collision)
   function create_pipe() {
     if (game_state !== 'Play') return;
 
@@ -128,13 +160,13 @@ function play() {
 
       let pipe_sprite_inv = document.createElement('div');
       pipe_sprite_inv.className = 'pipe_sprite';
-      pipe_sprite_inv.style.top = pipe_posi - 70 + 'vh';
+      pipe_sprite_inv.style.top = (pipe_posi - 70) + 'vh';
       pipe_sprite_inv.style.left = '100vw';
       document.body.appendChild(pipe_sprite_inv);
 
       let pipe_sprite = document.createElement('div');
       pipe_sprite.className = 'pipe_sprite';
-      pipe_sprite.style.top = pipe_posi + pipe_gap + 'vh';
+      pipe_sprite.style.top = (pipe_posi + pipe_gap) + 'vh';
       pipe_sprite.style.left = '100vw';
       pipe_sprite.increase_score = '1';
       document.body.appendChild(pipe_sprite);
@@ -146,7 +178,6 @@ function play() {
   }
   requestAnimationFrame(create_pipe);
 
-  // === Move pipes and detect collisions ===
   function move_pipes() {
     let pipe_sprite = document.querySelectorAll('.pipe_sprite');
     let bird_props = bird.getBoundingClientRect();
@@ -156,7 +187,6 @@ function play() {
       if (pipe_props.right <= 0) {
         element.remove();
       } else {
-        // Collision
         if (
           bird_props.left < pipe_props.left + pipe_props.width &&
           bird_props.left + bird_props.width > pipe_props.left &&
@@ -171,7 +201,7 @@ function play() {
         ) {
           score_val.innerHTML = +score_val.innerHTML + 1;
         }
-        element.style.left = pipe_props.left - move_speed + 'px';
+        element.style.left = (pipe_props.left - move_speed) + 'px';
       }
     });
   }
@@ -180,7 +210,7 @@ function play() {
 function endGame() {
   game_state = 'End';
   message.innerHTML = 'Game Over!';
-  message.style.left = '20vw'; // Adjusted for mobile
+  message.style.left = '20vw';
   start_btn.classList.remove('hidden');
   start_btn.innerHTML = 'Restart Game';
 
@@ -192,7 +222,7 @@ function endGame() {
   follower1.classList.add('hidden');
   follower2.classList.add('hidden');
 
-  // Lose sound plays 3 times
+  // Lose sound x3
   loseSound.currentTime = 0;
   let playCount = 0;
   loseSound.play();
@@ -204,13 +234,17 @@ function endGame() {
     } else {
       loseSound.removeEventListener('ended', handler);
     }
-  });
+  }, { once: true });
 }
 
-// === Followers fly dynamically ===
+// === Followers - Clamped to Viewport ===
 function moveFollowers() {
   let f1TargetY = 0;
   let f2TargetY = 0;
+  const isMobile = window.innerWidth <= 768;
+  const lerp = isMobile ? 0.08 : 0.05; // Tighter on mobile
+  const offset1 = isMobile ? 50 : 100;
+  const offset2 = isMobile ? 90 : 180;
 
   function updateFollowers() {
     if (game_state !== 'Play') return;
@@ -227,11 +261,23 @@ function moveFollowers() {
     f1TargetY += (Math.random() - 0.5) * 3;
     f2TargetY += (Math.random() - 0.5) * 3;
 
-    follower1.style.left = f1X + (birdX - 100 - f1X) * 0.05 + 'px';
-    follower2.style.left = f2X + (birdX - 180 - f2X) * 0.05 + 'px';
+    // Calculate targets
+    let target1X = birdX - offset1;
+    let target1Y = birdY + 30 + f1TargetY;
+    let target2X = birdX - offset2;
+    let target2Y = birdY + 50 + f2TargetY;
 
-    follower1.style.top = f1Y + (birdY + 30 + f1TargetY - f1Y) * 0.05 + 'px';
-    follower2.style.top = f2Y + (birdY + 50 + f2TargetY - f2Y) * 0.05 + 'px';
+    // CLAMP TO VIEWPORT (prevents out-of-frame)
+    target1X = Math.max(0, Math.min(window.innerWidth - 60, target1X)); // 60px = follower width
+    target1Y = Math.max(0, Math.min(window.innerHeight - 60, target1Y));
+    target2X = Math.max(0, Math.min(window.innerWidth - 50, target2X));
+    target2Y = Math.max(0, Math.min(window.innerHeight - 50, target2Y));
+
+    // Smooth lerp
+    follower1.style.left = f1X + (target1X - f1X) * lerp + 'px';
+    follower1.style.top = f1Y + (target1Y - f1Y) * lerp + 'px';
+    follower2.style.left = f2X + (target2X - f2X) * lerp + 'px';
+    follower2.style.top = f2Y + (target2Y - f2Y) * lerp + 'px';
 
     follower1.style.transform = `rotate(${Math.sin(Date.now() / 200) * 5}deg)`;
     follower2.style.transform = `rotate(${Math.cos(Date.now() / 250) * 5}deg)`;
