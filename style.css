@@ -7,6 +7,7 @@
 body {
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
 }
 
 .background {
@@ -19,12 +20,20 @@ body {
 }
 
 .bird {
-  height: 100px;
-  width: 160px;
   position: fixed;
+  width: 120px;
+  height: auto;
   top: 40vh;
   left: 30vw;
   z-index: 100;
+}
+
+.follower1, .follower2 {
+  position: absolute;
+  width: 80px;
+  height: auto;
+  z-index: 5;
+  pointer-events: none;
 }
 
 .pipe_sprite {
@@ -32,7 +41,7 @@ body {
   top: 40vh;
   left: 100vw;
   height: 70vh;
-  width: 6vw;
+  width: 10vw;
   background-image: url('https://i.ibb.co/SXZqmsjN/image.png');
   background-size: cover;
   background-position: center;
@@ -42,11 +51,10 @@ body {
 .message {
   position: fixed;
   z-index: 10;
-  height: 10vh;
-  font-size: 10vh;
-  font-weight: 100;
+  font-size: 8vh;
+  font-weight: bold;
   color: black;
-  top: 12vh;
+  top: 10vh;
   left: 20vw;
   text-align: center;
 }
@@ -54,9 +62,7 @@ body {
 .score {
   position: fixed;
   z-index: 10;
-  height: 10vh;
-  font-size: 10vh;
-  font-weight: 100;
+  font-size: 8vh;
   color: goldenrod;
   top: 0;
   left: 0;
@@ -72,13 +78,13 @@ body {
   top: 25vh;
   left: 50%;
   transform: translateX(-50%);
-  padding: 20px 40px;
-  font-size: 24px;
+  padding: 25px 50px;
+  font-size: 28px;
   font-weight: bold;
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 15px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -89,4 +95,64 @@ body {
 
 .start_btn.hidden {
   display: none;
+}
+
+/* === Mobile & Tablet Optimizations === */
+@media (max-width: 768px) {
+  .bird {
+    width: 100px;
+  }
+
+  .follower1, .follower2 {
+    width: 70px;
+  }
+
+  .pipe_sprite {
+    width: 15vw;
+  }
+
+  .message {
+    font-size: 6vh;
+    left: 10vw;
+  }
+
+  .score {
+    font-size: 6vh;
+  }
+
+  .start_btn {
+    font-size: 22px;
+    padding: 18px 40px;
+    top: 35vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .bird {
+    width: 90px;
+    left: 25vw;
+  }
+
+  .follower1, .follower2 {
+    width: 60px;
+  }
+
+  .pipe_sprite {
+    width: 30vw;
+  }
+
+  .message {
+    font-size: 5vh;
+    left: 5vw;
+  }
+
+  .score {
+    font-size: 5vh;
+  }
+
+  .start_btn {
+    font-size: 20px;
+    padding: 15px 35px;
+    top: 38vh;
+  }
 }

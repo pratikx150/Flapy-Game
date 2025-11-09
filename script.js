@@ -1,214 +1,237 @@
-// Background scrolling speed
+// === Game constants ===
 let move_speed = 3;
-
-// Gravity constant value
 let gravity = 0.5;
 
-// Getting reference to the bird element
+// === Elements ===
 let bird = document.querySelector('.bird');
+let follower1 = document.querySelector('.follower1');
+let follower2 = document.querySelector('.follower2');
+let background = document.querySelector('.background').getBoundingClientRect();
 
-// Getting bird element properties
-let bird_props = bird.getBoundingClientRect();
-let background =
-    document.querySelector('.background')
-            .getBoundingClientRect();
-
-// Getting reference to the score element
-let score_val =
-    document.querySelector('.score_val');
-let message =
-    document.querySelector('.message');
-let score_title =
-    document.querySelector('.score_title');
-
-// Setting initial game state to start
-let game_state = 'Start';
+let score_val = document.querySelector('.score_val');
+let message = document.querySelector('.message');
+let score_title = document.querySelector('.score_title');
 let start_btn = document.querySelector('.start_btn');
 
-// Get audio elements
+// === Audio ===
 let flySound = document.getElementById('flySound');
 let loseSound = document.getElementById('loseSound');
 let startSound = document.getElementById('startSound');
+let catchSound = document.getElementById('catchSound');
 
-// Set lose sound volume to maximum
+// === Audio setup ===
+flySound.volume = 0.2; // lower flying sound
 loseSound.volume = 1.0;
 
-// Play start sound when page loads
+// === Game state ===
+let game_state = 'Start';
+
+// === Start sound on load ===
 window.addEventListener('load', () => {
   startSound.play();
 });
 
-// Function to start the game
-function startGame() {
-  if (game_state != 'Play') {
-    document.querySelectorAll('.pipe_sprite')
-              .forEach((e) => {
-      e.remove();
-    });
-    bird.style.top = '40vh';
-    game_state = 'Play';
-    message.innerHTML = '';
-    start_btn.classList.add('hidden');
-    start_btn.innerHTML = 'Start Game';
-    score_title.innerHTML = 'Score : ';
-    score_val.innerHTML = '0';
-    
-    // Stop lose sound and play flying sound loop
-    loseSound.pause();
-    loseSound.currentTime = 0;
-    flySound.currentTime = 0;
-    flySound.play();
-    
-    play();
-  }
-}
-
-// Add click handler for start button
+// === Controls ===
 start_btn.addEventListener('click', startGame);
-
-// Add an eventlistener for key presses
 document.addEventListener('keydown', (e) => {
-
-  // Start the game if enter key is pressed
-  if (e.key == 'Enter' &&
-      game_state != 'Play') {
+  if (e.key === 'Enter' && game_state !== 'Play') {
     startGame();
   }
 });
-function play() {
-  function move() {
 
-    // Detect if game has ended
-    if (game_state != 'Play') return;
-
-    // Getting reference to all the pipe elements
-    let pipe_sprite = document.querySelectorAll('.pipe_sprite');
-    pipe_sprite.forEach((element) => {
-
-      let pipe_sprite_props = element.getBoundingClientRect();
-      bird_props = bird.getBoundingClientRect();
-
-      // Delete the pipes if they have moved out
-      // of the screen hence saving memory
-      if (pipe_sprite_props.right <= 0) {
-        element.remove();
-      } else {
-        // Collision detection with bird and pipes
-        if (
-          bird_props.left < pipe_sprite_props.left +
-          pipe_sprite_props.width &&
-          bird_props.left +
-          bird_props.width > pipe_sprite_props.left &&
-          bird_props.top < pipe_sprite_props.top +
-          pipe_sprite_props.height &&
-          bird_props.top +
-          bird_props.height > pipe_sprite_props.top
-        ) {
-
-          // Change game state and end the game
-          // if collision occurs
-          game_state = 'End';
-          message.innerHTML = 'Game Over!';
-          message.style.left = '35vw';
-          start_btn.classList.remove('hidden');
-          start_btn.innerHTML = 'Restart Game';
-          
-          // Stop fly sound and play lose sound
-          flySound.pause();
-          flySound.currentTime = 0;
-          loseSound.currentTime = 0;
-          loseSound.play();
-          
-          return;
-        } else {
-          // Increase the score if player
-          // has the successfully dodged the 
-          if (
-            pipe_sprite_props.right < bird_props.left &&
-            pipe_sprite_props.right + 
-            move_speed >= bird_props.left &&
-            element.increase_score == '1'
-          ) {
-            score_val.innerHTML = +score_val.innerHTML + 1;
-          }
-          element.style.left = 
-            pipe_sprite_props.left - move_speed + 'px';
-        }
-      }
-    });
-
-    requestAnimationFrame(move);
+// === Touch Controls (mobile tap to jump/start) ===
+document.addEventListener('touchstart', () => {
+  if (game_state === 'Start') {
+    startGame();
+  } else if (game_state === 'Play') {
+    // simulate jump key
+    let jumpEvent = new KeyboardEvent('keydown', { key: ' ' });
+    document.dispatchEvent(jumpEvent);
   }
-  requestAnimationFrame(move);
+});
 
+function startGame() {
+  if (game_state !== 'Play') {
+    document.querySelectorAll('.pipe_sprite').forEach((e) => e.remove());
+    bird.style.top = '40vh';
+    bird.style.left = '30vw';
+
+    follower1.style.left = '20vw';
+    follower2.style.left = '10vw';
+    follower1.style.top = '45vh';
+    follower2.style.top = '50vh';
+
+    game_state = 'Play';
+    message.innerHTML = '';
+    start_btn.classList.add('hidden');
+    score_title.innerHTML = 'Score : ';
+    score_val.innerHTML = '0';
+
+    follower1.classList.remove('hidden');
+    follower2.classList.remove('hidden');
+
+    loseSound.pause();
+    loseSound.currentTime = 0;
+    flySound.currentTime = 0;
+    catchSound.currentTime = 0;
+
+    flySound.play();
+    catchSound.play();
+
+    play();
+    moveFollowers();
+  }
+}
+
+function play() {
   let bird_dy = 0;
+  let bird_props = bird.getBoundingClientRect();
+  let pipe_seperation = 0;
+  let pipe_gap = 40; // slightly larger for mobile visibility
+
+  // === Bird gravity & controls ===
   function apply_gravity() {
-    if (game_state != 'Play') return;
-    bird_dy = bird_dy + gravity;
+    if (game_state !== 'Play') return;
+
+    bird_dy += gravity;
     document.addEventListener('keydown', (e) => {
-      if (e.key == 'ArrowUp' || e.key == ' ') {
+      if (e.key === 'ArrowUp' || e.key === ' ') {
         bird_dy = -7.6;
       }
     });
 
-    // Collision detection with bird and
-    // window top and bottom
-
-    if (bird_props.top <= 0 ||
-        bird_props.bottom >= background.bottom) {
-      game_state = 'End';
-      message.innerHTML = 'Game Over!';
-      message.style.left = '35vw';
-      start_btn.classList.remove('hidden');
-      start_btn.innerHTML = 'Restart Game';
-      
-      // Stop fly sound and play lose sound
-      flySound.pause();
-      flySound.currentTime = 0;
-      loseSound.currentTime = 0;
-      loseSound.play();
-      
+    bird_props = bird.getBoundingClientRect();
+    if (bird_props.top <= 0 || bird_props.bottom >= background.bottom) {
+      endGame();
       return;
     }
+
     bird.style.top = bird_props.top + bird_dy + 'px';
     bird_props = bird.getBoundingClientRect();
     requestAnimationFrame(apply_gravity);
   }
   requestAnimationFrame(apply_gravity);
 
-  let pipe_seperation = 0;
-
-  // Constant value for the gap between two pipes
-  let pipe_gap = 35;
+  // === Pipe creation ===
   function create_pipe() {
-    if (game_state != 'Play') return;
+    if (game_state !== 'Play') return;
 
-    // Create another set of pipes
-    // if distance between two pipe has exceeded
-    // a predefined value
-    if (pipe_seperation > 115) {
-      pipe_seperation = 0
+    if (pipe_seperation > 100) {
+      pipe_seperation = 0;
+      let pipe_posi = Math.floor(Math.random() * 40) + 10;
 
-      // Calculate random position of pipes on y axis
-      let pipe_posi = Math.floor(Math.random() * 43) + 8;
       let pipe_sprite_inv = document.createElement('div');
       pipe_sprite_inv.className = 'pipe_sprite';
       pipe_sprite_inv.style.top = pipe_posi - 70 + 'vh';
       pipe_sprite_inv.style.left = '100vw';
-
-      // Append the created pipe element in DOM
       document.body.appendChild(pipe_sprite_inv);
+
       let pipe_sprite = document.createElement('div');
       pipe_sprite.className = 'pipe_sprite';
       pipe_sprite.style.top = pipe_posi + pipe_gap + 'vh';
       pipe_sprite.style.left = '100vw';
       pipe_sprite.increase_score = '1';
-
-      // Append the created pipe element in DOM
       document.body.appendChild(pipe_sprite);
     }
+
     pipe_seperation++;
+    move_pipes();
     requestAnimationFrame(create_pipe);
   }
   requestAnimationFrame(create_pipe);
+
+  // === Move pipes and detect collisions ===
+  function move_pipes() {
+    let pipe_sprite = document.querySelectorAll('.pipe_sprite');
+    let bird_props = bird.getBoundingClientRect();
+
+    pipe_sprite.forEach((element) => {
+      let pipe_props = element.getBoundingClientRect();
+      if (pipe_props.right <= 0) {
+        element.remove();
+      } else {
+        // Collision
+        if (
+          bird_props.left < pipe_props.left + pipe_props.width &&
+          bird_props.left + bird_props.width > pipe_props.left &&
+          bird_props.top < pipe_props.top + pipe_props.height &&
+          bird_props.top + bird_props.height > pipe_props.top
+        ) {
+          endGame();
+        } else if (
+          pipe_props.right < bird_props.left &&
+          pipe_props.right + move_speed >= bird_props.left &&
+          element.increase_score === '1'
+        ) {
+          score_val.innerHTML = +score_val.innerHTML + 1;
+        }
+        element.style.left = pipe_props.left - move_speed + 'px';
+      }
+    });
+  }
+}
+
+function endGame() {
+  game_state = 'End';
+  message.innerHTML = 'Game Over!';
+  message.style.left = '35vw';
+  start_btn.classList.remove('hidden');
+  start_btn.innerHTML = 'Restart Game';
+
+  flySound.pause();
+  catchSound.pause();
+  flySound.currentTime = 0;
+  catchSound.currentTime = 0;
+
+  follower1.classList.add('hidden');
+  follower2.classList.add('hidden');
+
+  // Lose sound plays 3 times
+  loseSound.currentTime = 0;
+  let playCount = 0;
+  loseSound.play();
+  loseSound.addEventListener('ended', function handler() {
+    playCount++;
+    if (playCount < 3) {
+      loseSound.currentTime = 0;
+      loseSound.play();
+    } else {
+      loseSound.removeEventListener('ended', handler);
+    }
+  });
+}
+
+// === Followers fly dynamically ===
+function moveFollowers() {
+  let f1TargetY = 0;
+  let f2TargetY = 0;
+
+  function updateFollowers() {
+    if (game_state !== 'Play') return;
+
+    let birdRect = bird.getBoundingClientRect();
+    let birdX = birdRect.left;
+    let birdY = birdRect.top;
+
+    let f1X = parseFloat(follower1.style.left || '0');
+    let f1Y = parseFloat(follower1.style.top || '0');
+    let f2X = parseFloat(follower2.style.left || '0');
+    let f2Y = parseFloat(follower2.style.top || '0');
+
+    f1TargetY += (Math.random() - 0.5) * 3;
+    f2TargetY += (Math.random() - 0.5) * 3;
+
+    follower1.style.left = f1X + (birdX - 100 - f1X) * 0.05 + 'px';
+    follower2.style.left = f2X + (birdX - 180 - f2X) * 0.05 + 'px';
+
+    follower1.style.top = f1Y + (birdY + 30 + f1TargetY - f1Y) * 0.05 + 'px';
+    follower2.style.top = f2Y + (birdY + 50 + f2TargetY - f2Y) * 0.05 + 'px';
+
+    follower1.style.transform = `rotate(${Math.sin(Date.now() / 200) * 5}deg)`;
+    follower2.style.transform = `rotate(${Math.cos(Date.now() / 250) * 5}deg)`;
+
+    requestAnimationFrame(updateFollowers);
+  }
+
+  requestAnimationFrame(updateFollowers);
 }

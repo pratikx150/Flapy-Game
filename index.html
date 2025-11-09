@@ -2,33 +2,41 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="background"></div>
-    <img class="bird" src="https://i.ibb.co/1frLcCsm/image-removebg-preview.png" alt="bird-img">
-    <div class="message">
-        Click Start or Press Enter
-    </div>
-    <button class="start_btn">Start Game</button>
-    <div class="score">
-        <span class="score_title"></span>
-        <span class="score_val"></span>
-    </div>
+  <div class="background"></div>
 
-    <!-- Audio elements -->
-    <audio id="flySound" loop>
-        <source src="fly.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="loseSound" loop>
-        <source src="lose.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="startSound">
-        <source src="start.mp3" type="audio/mpeg">
-    </audio>
+  <!-- Main player bird -->
+  <img class="bird" src="https://i.ibb.co/1frLcCsm/image-removebg-preview.png" alt="bird-img">
 
-    <script src="script.js"></script>
+  <!-- Followers (hidden until game starts) -->
+  <img class="bird follower1 hidden" src="https://i.ibb.co/xKt0GqNx/image.png" alt="follower-bird1">
+  <img class="bird follower2 hidden" src="https://i.ibb.co/Nd6HcMpK/image.png" alt="follower-bird2">
+
+  <div class="message">Click Start or Press Enter</div>
+  <button class="start_btn">Start Game</button>
+
+  <div class="score">
+    <span class="score_title"></span>
+    <span class="score_val"></span>
+  </div>
+
+  <!-- Audio -->
+  <audio id="flySound" loop>
+    <source src="fly.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="loseSound">
+    <source src="lose.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="startSound">
+    <source src="start.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="catchSound" loop>
+    <source src="catch.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="script.js"></script>
 </body>
-
 </html>
