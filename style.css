@@ -1,221 +1,195 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  touch-action: manipulation;
-}
-.background {
-  height: 100vh;
-  width: 100vw;
-  background-image: url('https://user-images.githubusercontent.com/18351809/46888871-624a3900-ce7f-11e8-808e-99fd90c8a3f4.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-.bird {
-  position: fixed;
-  width: 120px;
-  height: auto;
-  top: 40vh;
-  left: 30vw;
-
-
-.follower1, .follower2 {
-  position: fixed;
-  width: 80px;
-  height: auto;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.pipe_sprite {
-  position: fixed;
-  top: 40vh;
-  left: 100vw;
-  height: 70vh;
-  width: 10vw;
-  background-image: url('https://i.ibb.co/SXZqmsjN/image.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.message {
-  position: fixed;
-  z-index: 10;
-  font-size: 8vh;
-  font-weight: bold;
-  color: black;
-  top: 10vh;
-  left: 20vw;
-  text-align: center;
-}
-
-.score {
-  position: fixed;
-  z-index: 10;
-  font-size: 8vh;
-  color: goldenrod;
-  top: 0;
-  left: 2vw;
-}
-
-.score_val {
-  color: gold;
-}
-
-.start_btn {
-  position: fixed;
-  z-index: 10;
-  top: 25vh;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 25px 50px;
-  font-size: 28px;
-  font-weight: bold;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.start_btn:hover, .start_btn:active {
-  background-color: #45a049;
-  transform: translateX(-50%) scale(1.05);
-}
-
-.start_btn.hidden {
-  display: none;
-}
-
-.footer {
-  position: fixed;
-  z-index: 1000;
-  bottom: 2vh;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
-  border-radius: 50px;
-  font-size: 3vh;
-  font-weight: bold;
-  color: #1a1a1a;
-  text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
-  animation: footerGlow 2s ease-in-out infinite alternate;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-}
-
-.footer:hover, .footer:active {
-  transform: translateX(-50%) scale(1.1);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-}
-
-.footer span {
-  animation: fadeInUp 1s ease-out;
-}
-
-.name {
-  color: gold;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-}
-
-@keyframes footerGlow {
-  from { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
-  to { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  html, body {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  .background {
+    height: 100vh;
+    width: 100vw;
+    background-image: url('https://user-images.githubusercontent.com/18351809/46888871-624a3900-ce7f-11e8-808e-99fd90c8a3f4.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
   .bird {
+    position: fixed;
+    width: 120px;
+    height: auto;
+    top: 40vh;
+    left: 30vw;
+    z-index: 100;
+    touch-action: none;
+  }
+  .follower1, .follower2 {
+    position: fixed;
     width: 80px;
-    left: 20vw;
+    height: auto;
+    z-index: 5;
+    pointer-events: none;
   }
-
-  .follower1, .follower2 {
-    width: 60px;
-  }
-
   .pipe_sprite {
-    width: 12vw;
-    height: 65vh;
+    position: fixed;
+    top: 40vh;
+    left: 100vw;
+    height: 70vh;
+    width: 10vw;
+    background-image: url('https://i.ibb.co/SXZqmsjN/image.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
-
   .message {
-    font-size: 6vh;
-    left: 10vw;
-    top: 15vh;
+    position: fixed;
+    z-index: 10;
+    font-size: 8vh;
+    font-weight: bold;
+    color: black;
+    top: 10vh;
+    left: 20vw;
+    text-align: center;
   }
-
   .score {
-    font-size: 6vh;
+    position: fixed;
+    z-index: 10;
+    font-size: 8vh;
+    color: goldenrod;
+    top: 0;
     left: 2vw;
   }
-
+  .score_val {
+    color: gold;
+  }
   .start_btn {
-    font-size: 20px;
-    padding: 15px 35px;
-    top: 30vh;
+    position: fixed;
+    z-index: 20; /* Increased for touch reliability */
+    top: 25vh;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 25px 50px;
+    font-size: 28px;
+    font-weight: bold;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    touch-action: manipulation; /* Ensure touch events work */
   }
-
+  .start_btn:hover, .start_btn:active {
+    background-color: #45a049;
+    transform: translateX(-50%) scale(1.05);
+  }
+  .start_btn.hidden {
+    display: none;
+  }
   .footer {
-    font-size: 2.5vh;
-    padding: 10px 20px;
-    gap: 8px;
-    bottom: 1vh;
+    position: fixed;
+    z-index: 1000;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 3vh;
+    font-weight: bold;
+    color: #1a1a1a;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+    animation: footerGlow 2s ease-in-out infinite alternate;
+    transition: all 0.3s ease;
+    pointer-events: auto;
   }
-}
-
-@media (max-width: 480px) {
-  .bird {
-    width: 60px;
-    left: 20vw;
+  .footer:hover, .footer:active {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
   }
-
-  .follower1, .follower2 {
-    width: 50px;
+  .footer span {
+    animation: fadeInUp 1s ease-out;
   }
-
-  .pipe_sprite {
-    width: 15vw;
-    height: 60vh;
+  .name {
+    color: gold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
   }
-
-  .message {
-    font-size: 5vh;
-    left: 5vw;
-    top: 20vh;
+  @keyframes footerGlow {
+    from { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
+    to { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
   }
-
-  .score {
-    font-size: 5vh;
-    left: 2vw;
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-
-  .start_btn {
-    font-size: 18px;
-    padding: 12px 30px;
-    top: 35vh;
+  @media (max-width: 768px) {
+    .bird {
+      width: 80px;
+      left: 20vw;
+    }
+    .follower1, .follower2 {
+      width: 60px;
+    }
+    .pipe_sprite {
+      width: 12vw;
+      height: 65vh;
+    }
+    .message {
+      font-size: 6vh;
+      left: 10vw;
+      top: 15vh;
+    }
+    .score {
+      font-size: 6vh;
+      left: 2vw;
+    }
+    .start_btn {
+      font-size: 20px;
+      padding: 15px 35px;
+      top: 30vh;
+    }
+    .footer {
+      font-size: 2.5vh;
+      padding: 10px 20px;
+      gap: 8px;
+      bottom: 1vh;
+    }
   }
-
-  .footer {
-    font-size: 2vh;
-    padding: 8px 16px;
-    gap: 6px;
+  @media (max-width: 480px) {
+    .bird {
+      width: 60px;
+      left: 20vw;
+    }
+    .follower1, .follower2 {
+      width: 50px;
+    }
+    .pipe_sprite {
+      width: 15vw;
+      height: 60vh;
+    }
+    .message {
+      font-size: 5vh;
+      left: 5vw;
+      top: 20vh;
+    }
+    .score {
+      font-size: 5vh;
+      left: 2vw;
+    }
+    .start_btn {
+      font-size: 18px;
+      padding: 12px 30px;
+      top: 35vh;
+    }
+    .footer {
+      font-size: 2vh;
+      padding: 8px 16px;
+      gap: 6px;
+    }
   }
-}
