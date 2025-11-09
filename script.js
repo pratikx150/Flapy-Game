@@ -40,24 +40,30 @@ document.addEventListener('keydown', (e) => {
 });
 
 // === Touch Controls (mobile tap to jump/start) ===
-document.addEventListener('touchstart', () => {
+let lastTouchTime = 0;
+document.addEventListener('touchstart', (e) => {
+  e.preventDefault(); // Prevent default touch behaviors
+  const currentTime = Date.now();
+  if (currentTime - lastTouchTime < 300) return; // Debounce to prevent rapid taps
+  lastTouchTime = currentTime;
+
   if (game_state === 'Start') {
     startGame();
   } else if (game_state === 'Play') {
-    // simulate jump key
+    // Simulate jump key
     let jumpEvent = new KeyboardEvent('keydown', { key: ' ' });
     document.dispatchEvent(jumpEvent);
   }
-});
+}, { passive: false });
 
 function startGame() {
   if (game_state !== 'Play') {
     document.querySelectorAll('.pipe_sprite').forEach((e) => e.remove());
     bird.style.top = '40vh';
-    bird.style.left = '30vw';
+    bird.style.left = '20vw'; // Adjusted for mobile centering
 
-    follower1.style.left = '20vw';
-    follower2.style.left = '10vw';
+    follower1.style.left = '10vw';
+    follower2.style.left = '5vw';
     follower1.style.top = '45vh';
     follower2.style.top = '50vh';
 
@@ -87,7 +93,7 @@ function play() {
   let bird_dy = 0;
   let bird_props = bird.getBoundingClientRect();
   let pipe_seperation = 0;
-  let pipe_gap = 40; // slightly larger for mobile visibility
+  let pipe_gap = 45; // Increased for mobile playability
 
   // === Bird gravity & controls ===
   function apply_gravity() {
@@ -174,7 +180,7 @@ function play() {
 function endGame() {
   game_state = 'End';
   message.innerHTML = 'Game Over!';
-  message.style.left = '35vw';
+  message.style.left = '20vw'; // Adjusted for mobile
   start_btn.classList.remove('hidden');
   start_btn.innerHTML = 'Restart Game';
 

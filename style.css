@@ -8,6 +8,7 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  touch-action: manipulation; /* Prevents default touch behaviors like zooming */
 }
 
 .background {
@@ -26,6 +27,7 @@ body {
   top: 40vh;
   left: 30vw;
   z-index: 100;
+  touch-action: none; /* Prevents touch interference with bird */
 }
 
 .follower1, .follower2 {
@@ -65,7 +67,7 @@ body {
   font-size: 8vh;
   color: goldenrod;
   top: 0;
-  left: 0;
+  left: 2vw;
 }
 
 .score_val {
@@ -97,40 +99,22 @@ body {
   display: none;
 }
 
+.footer {
+  position: fixed;
+  z-index: 10;
+  bottom: 2vh;
+  left: 2vw;
+  font-size: 3vh;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
+}
+
 /* === Mobile & Tablet Optimizations === */
 @media (max-width: 768px) {
   .bird {
-    width: 100px;
-  }
-
-  .follower1, .follower2 {
-    width: 70px;
-  }
-
-  .pipe_sprite {
-    width: 15vw;
-  }
-
-  .message {
-    font-size: 6vh;
-    left: 10vw;
-  }
-
-  .score {
-    font-size: 6vh;
-  }
-
-  .start_btn {
-    font-size: 22px;
-    padding: 18px 40px;
-    top: 35vh;
-  }
-}
-
-@media (max-width: 480px) {
-  .bird {
-    width: 90px;
-    left: 25vw;
+    width: 80px; /* Reduced size for better fit */
+    left: 20vw; /* Centered better for tablets */
   }
 
   .follower1, .follower2 {
@@ -138,21 +122,67 @@ body {
   }
 
   .pipe_sprite {
-    width: 30vw;
+    width: 12vw; /* Slightly wider for visibility */
+    height: 65vh; /* Adjusted for mobile screens */
   }
 
   .message {
-    font-size: 5vh;
-    left: 5vw;
+    font-size: 6vh;
+    left: 10vw;
+    top: 15vh; /* Adjusted for better visibility */
   }
 
   .score {
-    font-size: 5vh;
+    font-size: 6vh;
+    left: 2vw;
   }
 
   .start_btn {
     font-size: 20px;
     padding: 15px 35px;
-    top: 38vh;
+    top: 30vh;
+  }
+
+  .footer {
+    font-size: 2.5vh;
+    bottom: 1vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .bird {
+    width: 60px; /* Smaller for phones */
+    left: 20vw;
+  }
+
+  .follower1, .follower2 {
+    width: 50px;
+  }
+
+  .pipe_sprite {
+    width: 15vw; /* Adjusted for small screens */
+    height: 60vh;
+  }
+
+  .message {
+    font-size: 5vh;
+    left: 5vw;
+    top: 20vh; /* Moved down for better visibility */
+  }
+
+  .score {
+    font-size: 5vh;
+    left: 2vw;
+  }
+
+  .start_btn {
+    font-size: 18px;
+    padding: 12px 30px;
+    top: 35vh;
+  }
+
+  .footer {
+    font-size: 2vh;
+    bottom: 1vh;
   }
 }
