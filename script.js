@@ -30,6 +30,9 @@ let flySound = document.getElementById('flySound');
 let loseSound = document.getElementById('loseSound');
 let startSound = document.getElementById('startSound');
 
+// Set lose sound volume to maximum
+loseSound.volume = 1.0;
+
 // Play start sound when page loads
 window.addEventListener('load', () => {
   startSound.play();
@@ -50,7 +53,9 @@ function startGame() {
     score_title.innerHTML = 'Score : ';
     score_val.innerHTML = '0';
     
-    // Play flying sound loop
+    // Stop lose sound and play flying sound loop
+    loseSound.pause();
+    loseSound.currentTime = 0;
     flySound.currentTime = 0;
     flySound.play();
     
