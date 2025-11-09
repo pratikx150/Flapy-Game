@@ -59,3 +59,28 @@ body {
 .score_val {
   color: gold;
 }
+
+.start_btn {
+  position: fixed;
+  z-index: 10;
+  top: 25vh;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 20px 40px;
+  font-size: 24px;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.start_btn:hover {
+  background-color: #45a049;
+}
+
+.start_btn.hidden {
+  display: none;
+}

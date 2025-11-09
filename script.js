@@ -23,13 +23,11 @@ let score_title =
 
 // Setting initial game state to start
 let game_state = 'Start';
+let start_btn = document.querySelector('.start_btn');
 
-// Add an eventlistener for key presses
-document.addEventListener('keydown', (e) => {
-
-  // Start the game if enter key is pressed
-  if (e.key == 'Enter' &&
-      game_state != 'Play') {
+// Function to start the game
+function startGame() {
+  if (game_state != 'Play') {
     document.querySelectorAll('.pipe_sprite')
               .forEach((e) => {
       e.remove();
@@ -37,9 +35,23 @@ document.addEventListener('keydown', (e) => {
     bird.style.top = '40vh';
     game_state = 'Play';
     message.innerHTML = '';
+    start_btn.classList.add('hidden');
     score_title.innerHTML = 'Score : ';
     score_val.innerHTML = '0';
     play();
+  }
+}
+
+// Add click handler for start button
+start_btn.addEventListener('click', startGame);
+
+// Add an eventlistener for key presses
+document.addEventListener('keydown', (e) => {
+
+  // Start the game if enter key is pressed
+  if (e.key == 'Enter' &&
+      game_state != 'Play') {
+    startGame();
   }
 });
 function play() {
@@ -75,8 +87,10 @@ function play() {
           // Change game state and end the game
           // if collision occurs
           game_state = 'End';
-          message.innerHTML = 'Press Enter To Restart';
-          message.style.left = '28vw';
+          message.innerHTML = 'Game Over!';
+          message.style.left = '35vw';
+          start_btn.classList.remove('hidden');
+          start_btn.innerHTML = 'Restart Game';
           return;
         } else {
           // Increase the score if player
@@ -115,8 +129,10 @@ function play() {
     if (bird_props.top <= 0 ||
         bird_props.bottom >= background.bottom) {
       game_state = 'End';
-      message.innerHTML = 'Press Enter To Restart';
-      message.style.left = '28vw';
+      message.innerHTML = 'Game Over!';
+      message.style.left = '35vw';
+      start_btn.classList.remove('hidden');
+      start_btn.innerHTML = 'Restart Game';
       return;
     }
     bird.style.top = bird_props.top + bird_dy + 'px';
