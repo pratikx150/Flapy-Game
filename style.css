@@ -10,7 +10,6 @@ html, body {
   overflow: hidden;
   touch-action: manipulation;
 }
-
 .background {
   height: 100vh;
   width: 100vw;
@@ -19,16 +18,13 @@ html, body {
   background-position: center;
   background-repeat: no-repeat;
 }
-
 .bird {
   position: fixed;
   width: 120px;
   height: auto;
   top: 40vh;
   left: 30vw;
-  z-index: 100;
-  touch-action: none;
-}
+
 
 .follower1, .follower2 {
   position: fixed;

@@ -41,6 +41,11 @@ let unlockAudios = () => {
 };
 // === Controls ===
 start_btn.addEventListener('click', startGame);
+// Explicit touchend for button (instant on mobile)
+start_btn.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  startGame();
+});
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && game_state !== 'Play') {
     startGame();
@@ -49,11 +54,18 @@ document.addEventListener('keydown', (e) => {
 // === Touch Controls ===
 let lastTouchTime = 0;
 document.addEventListener('touchstart', (e) => {
-  e.preventDefault();
   unlockAudios();
   const currentTime = Date.now();
   if (currentTime - lastTouchTime < 300) return;
   lastTouchTime = currentTime;
+  // Only preventDefault during Play to avoid interfering with buttons
+  if (game_state === 'Play') {
+    e.preventDefault();
+  }
+  if (game_state === 'Start' || game_state === 'End') {
+    // Allow button touches to propagate
+    return;
+  }
   if (game_state === 'Start') {
     startGame();
   } else if (game_state === 'Play') {
