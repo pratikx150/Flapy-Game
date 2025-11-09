@@ -103,8 +103,8 @@ html, body {
 .footer {
   position: fixed;
   z-index: 1000;
-  bottom: 2vh;
-  left: 50%;
+  bottom: 83vh;
+  left: 9%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
