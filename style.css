@@ -103,8 +103,8 @@ html, body {
 .footer {
   position: fixed;
   z-index: 1000;
-  bottom: 83vh;
-  left: 9%;
+  bottom: 2vh;
+  left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -138,6 +138,7 @@ html, body {
 @keyframes footerGlow {
   from { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
   to { box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); }
+}
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
