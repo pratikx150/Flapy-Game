@@ -36,6 +36,7 @@ function startGame() {
     game_state = 'Play';
     message.innerHTML = '';
     start_btn.classList.add('hidden');
+    start_btn.innerHTML = 'Start Game';
     score_title.innerHTML = 'Score : ';
     score_val.innerHTML = '0';
     play();
