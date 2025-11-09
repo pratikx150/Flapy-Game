@@ -46,20 +46,39 @@ function startGame() {
       e.remove();
     });
     bird.style.top = '40vh';
-    game_state = 'Play';
-    message.innerHTML = '';
-    start_btn.classList.add('hidden');
-    start_btn.innerHTML = 'Start Game';
-    score_title.innerHTML = 'Score : ';
-    score_val.innerHTML = '0';
     
-    // Stop lose sound and play flying sound loop
-    loseSound.pause();
-    loseSound.currentTime = 0;
-    flySound.currentTime = 0;
-    flySound.play();
-    
-    play();
+    // Check if restarting from game over
+    if (game_state == 'End') {
+      // Reset to start state
+      game_state = 'Start';
+      message.innerHTML = 'Click Start or Press Enter';
+      start_btn.classList.remove('hidden');
+      start_btn.innerHTML = 'Start Game';
+      score_title.innerHTML = '';
+      score_val.innerHTML = '';
+      
+      // Stop lose sound and play start sound
+      loseSound.pause();
+      loseSound.currentTime = 0;
+      startSound.currentTime = 0;
+      startSound.play();
+    } else {
+      // Starting fresh game
+      game_state = 'Play';
+      message.innerHTML = '';
+      start_btn.classList.add('hidden');
+      start_btn.innerHTML = 'Start Game';
+      score_title.innerHTML = 'Score : ';
+      score_val.innerHTML = '0';
+      
+      // Stop lose sound and play flying sound loop
+      loseSound.pause();
+      loseSound.currentTime = 0;
+      flySound.currentTime = 0;
+      flySound.play();
+      
+      play();
+    }
   }
 }
 
