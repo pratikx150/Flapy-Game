@@ -25,6 +25,16 @@ let score_title =
 let game_state = 'Start';
 let start_btn = document.querySelector('.start_btn');
 
+// Get audio elements
+let flySound = document.getElementById('flySound');
+let loseSound = document.getElementById('loseSound');
+let startSound = document.getElementById('startSound');
+
+// Play start sound when page loads
+window.addEventListener('load', () => {
+  startSound.play();
+});
+
 // Function to start the game
 function startGame() {
   if (game_state != 'Play') {
@@ -39,6 +49,11 @@ function startGame() {
     start_btn.innerHTML = 'Start Game';
     score_title.innerHTML = 'Score : ';
     score_val.innerHTML = '0';
+    
+    // Play flying sound loop
+    flySound.currentTime = 0;
+    flySound.play();
+    
     play();
   }
 }
@@ -92,6 +107,13 @@ function play() {
           message.style.left = '35vw';
           start_btn.classList.remove('hidden');
           start_btn.innerHTML = 'Restart Game';
+          
+          // Stop fly sound and play lose sound
+          flySound.pause();
+          flySound.currentTime = 0;
+          loseSound.currentTime = 0;
+          loseSound.play();
+          
           return;
         } else {
           // Increase the score if player
@@ -134,6 +156,13 @@ function play() {
       message.style.left = '35vw';
       start_btn.classList.remove('hidden');
       start_btn.innerHTML = 'Restart Game';
+      
+      // Stop fly sound and play lose sound
+      flySound.pause();
+      flySound.currentTime = 0;
+      loseSound.currentTime = 0;
+      loseSound.play();
+      
       return;
     }
     bird.style.top = bird_props.top + bird_dy + 'px';
