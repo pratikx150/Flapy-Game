@@ -1,40 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#70c5ce">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Flapy Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="background"></div>
-  <!-- Main player bird -->
-  <img class="bird" src="https://i.ibb.co/1frLcCsm/image-removebg-preview.png" alt="bird-img">
-  <!-- Followers (hidden until game starts) -->
-  <img class="bird follower1 hidden" src="https://i.ibb.co/xKt0GqNx/image.png" alt="follower-bird1">
-  <img class="bird follower2 hidden" src="https://i.ibb.co/Nd6HcMpK/image.png" alt="follower-bird2">
-  <div class="message">Click Start or Press Enter</div>
-  <button class="start_btn">Start Game</button>
-  <div class="score">
-    <span class="score_title"></span>
-    <span class="score_val"></span>
+  <canvas id="game" aria-label="Flapy game canvas"></canvas>
+
+  <div class="hud">
+    <button id="pauseBtn" class="icon_btn" aria-label="Pause" title="Pause (P)">❚❚</button>
+    <button id="muteBtn" class="icon_btn" aria-label="Toggle sound" title="Sound (M)">🔊</button>
   </div>
-  <!-- Footer -->
-  <div class="footer">
-    <span>Not Made by</span>
-    <span class="name">Pratik</span>
+
+  <!-- Menu overlay (start / game over / paused) -->
+  <div id="overlay" class="overlay">
+    <div class="panel">
+      <h1 id="title">Flapy</h1>
+      <p id="subtitle" class="subtitle">Tap, click or press Space to flap</p>
+      <div id="scores" class="scores hidden">
+        <div><span class="label">Score</span><span id="finalScore">0</span></div>
+        <div><span class="label">Best</span><span id="bestScore">0</span></div>
+      </div>
+      <button id="startBtn" class="start_btn">Start Game</button>
+      <p class="hint">Space / ↑ / W / Tap = flap &nbsp;·&nbsp; P = pause &nbsp;·&nbsp; M = mute</p>
+    </div>
   </div>
-  <!-- Audio -->
-  <audio id="flySound" preload="auto" loop>
-    <source src="fly.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="loseSound" preload="auto">
-    <source src="lose.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="startSound" preload="auto">
-    <source src="start.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="catchSound" preload="auto" loop>
-    <source src="catch.mp3" type="audio/mpeg">
-  </audio>
+
+  <div class="footer"><span>Not Made by</span> <span class="name">Pratik</span></div>
+
   <script src="script.js"></script>
 </body>
 </html>
