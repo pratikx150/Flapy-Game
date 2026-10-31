@@ -53,8 +53,8 @@ function cleanGuestName(raw) {
 
 const wrap = (fn) => (req, res) =>
   fn(req, res).catch((e) => {
-    console.error('[flapy] error on', req.method, req.path, '-', e.message);
-    res.status(500).json({ error: 'Server error. Please try again.' });
+    console.error('[flapy] error on', req.method, req.path, '-', e.code || '', e.message);
+    res.status(500).json({ error: 'Server error' + (e.code ? ' (' + e.code + ')' : '') + '. Please try again.' });
   });
 
 const publicUser = (u) => ({ id: String(u.id), name: u.display_name, guest: u.is_guest });
@@ -134,6 +134,15 @@ const gameLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Slow down a little.' },
 });
+
+/* ---- health check: open /api/health in the browser to test the database ---- */
+app.get('/api/health', wrap(async (req, res) => {
+  const t = await pool.query(
+    `SELECT table_name FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name IN ('users','sessions','runs','scores','best_scores')`
+  );
+  res.json({ ok: t.rows.length === 5, database: 'connected', tables: t.rows.map((r) => r.table_name).sort() });
+}));
 
 /* ---- sign up: unique username + password ---- */
 app.post('/api/signup', authLimiter, wrap(async (req, res) => {

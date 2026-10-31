@@ -189,10 +189,13 @@
         body: opts.body ? JSON.stringify(opts.body) : undefined,
         signal: ctrl.signal,
       });
-      let data = {};
-      try { data = await res.json(); } catch (_) {}
+      let data = {}, isJson = true;
+      try { data = await res.json(); } catch (_) { isJson = false; }
       if (!res.ok) {
-        const err = new Error(data.error || 'Something went wrong. Please try again.');
+        const msg = isJson
+          ? (data.error || 'Something went wrong. Please try again.')
+          : 'Game server not found (HTTP ' + res.status + '). Start it with "npm start" and open the address it prints, not a plain file server.';
+        const err = new Error(msg);
         err.status = res.status;
         throw err;
       }
