@@ -25,7 +25,7 @@
     gapMin: 160,
     margin: 80,                  // min distance of a gap from the top / bottom
     maxGapShift: 170,            // keeps consecutive gaps reachable
-    birdW: 56,
+    birdD: 64,                   // diameter of the main bird's face
     birdX: 0.28,                 // fraction of world width
   };
 
@@ -51,9 +51,9 @@
   }
   const IMG = {
     bg:   loadImg('assets/images/background.png'),
-    bird: loadImg('assets/images/bird.png'),
-    f1:   loadImg('assets/images/follower1.svg'),
-    f2:   loadImg('assets/images/follower2.svg'),
+    faceMain: loadImg('assets/images/face_main.png'),           // player bird
+    face1:    loadImg('assets/images/face_follower1.png'),      // follower bird 1 (blue)
+    face2:    loadImg('assets/images/face_follower2.png'),      // follower bird 2 (pink)
     pipe: loadImg('assets/images/pipe.svg'),
   };
   const ok = (img) => img.complete && img.naturalWidth > 0;
@@ -151,22 +151,23 @@
     W = cw / scale;
     canvas.width = Math.round(cw * dpr);
     canvas.height = Math.round(ch * dpr);
-    if (bird) bird.x = Math.max(60, W * CFG.birdX);
+    if (bird) bird.x = Math.max(104, W * CFG.birdX);
   }
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 150));
 
-  function birdSize() {
-    const ratio = ok(IMG.bird) ? IMG.bird.naturalHeight / IMG.bird.naturalWidth : 0.75;
-    return { w: CFG.birdW, h: CFG.birdW * ratio };
-  }
+  // Colour sets for the three birds (all share the same face)
+  const PAL = {
+    main: { body: '#ffd23f', belly: '#fff4c2', wing: '#f5b41a', tail: '#e0a312', beak: '#ff7a1a' },
+    blue: { body: '#5bc0f2', belly: '#e6f7ff', wing: '#2f9be0', tail: '#2f86c9', beak: '#ff9a1a' },
+    pink: { body: '#ff7a8a', belly: '#ffe3e7', wing: '#e04a60', tail: '#c93a50', beak: '#ffb01a' },
+  };
 
   function resetWorld() {
-    const sz = birdSize();
-    bird = { x: Math.max(60, W * CFG.birdX), y: H * 0.45, vy: 0, w: sz.w, h: sz.h, rot: 0 };
+    bird = { x: Math.max(104, W * CFG.birdX), y: H * 0.45, vy: 0, D: CFG.birdD, rot: 0 };
     followers = [
-      { x: bird.x - 40,  y: bird.y + 10, img: IMG.f1, w: 40, phase: 0 },
-      { x: bird.x - 70, y: bird.y + 25, img: IMG.f2, w: 36, phase: 2 },
+      { x: bird.x - 70, y: bird.y - 60, D: 46, pal: PAL.blue, img: IMG.face1, phase: 0, side: -1 },
+      { x: bird.x - 70, y: bird.y + 60, D: 46, pal: PAL.pink, img: IMG.face2, phase: 2, side: 1 },
     ];
     pipes = [];
     score = 0;
@@ -284,15 +285,16 @@
     bird.y += bird.vy;
     bird.rot += ((Math.max(-0.45, Math.min(1.1, bird.vy * 0.075))) - bird.rot) * 0.2;
 
-    if (bird.y - bird.h / 2 < 0) { bird.y = bird.h / 2; if (bird.vy < 0) bird.vy = 0; }
-    if (bird.y + bird.h / 2 > H) { bird.y = H - bird.h / 2; endGame(); return; }
+    const R = bird.D / 2;
+    if (bird.y - R < 0) { bird.y = R; if (bird.vy < 0) bird.vy = 0; }
+    if (bird.y + R * 1.7 > H) { bird.y = H - R * 1.7; endGame(); return; }
 
     // pipes
     distSincePipe += speed;
     if (distSincePipe >= CFG.pipeSpacing) { distSincePipe = 0; spawnPipe(); }
 
-    const r = bird.w * 0.34;                    // forgiving hitbox
-    const hy = bird.y - bird.h * 0.12;          // centred on the head
+    const r = bird.D * 0.36;                    // forgiving hitbox, centred on the face
+    const hy = bird.y;
     for (let i = pipes.length - 1; i >= 0; i--) {
       const p = pipes[i];
       p.x -= speed;
@@ -315,11 +317,12 @@
       }
     }
 
-    // followers
-    followers.forEach((f, i) => {
-      const gapX = Math.min(55, (bird.x - 24) / 2.4);   // keep both followers on-screen on narrow phones
-      const tx = bird.x - (i + 1) * gapX;
-      const ty = bird.y + 14 + i * 14 + Math.sin(time * 2.2 + f.phase) * 10;
+    // followers: fly in formation above / below-behind the main bird
+    followers.forEach((f) => {
+      const dx = Math.min(80, bird.x - 52);
+      const tx = bird.x - dx;
+      let ty = bird.y + f.side * 62 + Math.sin(time * 2.2 + f.phase) * 8;
+      ty = Math.max(f.D / 2 + 6, Math.min(H - f.D * 1.2, ty));
       f.x += (tx - f.x) * 0.07;
       f.y += (ty - f.y) * 0.07;
     });
@@ -370,20 +373,70 @@
     }
   }
 
-  function drawBirdSprite(img, x, y, w, rot, fallbackColor) {
+  // Draws one bird: tail, feet, body, beak, wing and crest in code (vector),
+  // with the face image as the head. (x, y) is the centre of the face.
+  function drawFaceBird(x, y, D, rot, pal, wingAng, faceImg) {
+    const R = D / 2, OL = Math.max(2, D * 0.05), line = '#4a3a45';
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot);
-    if (ok(img)) {
-      const h = w * img.naturalHeight / img.naturalWidth;
-      ctx.drawImage(img, -w / 2, -h / 2, w, h);
-    } else {
-      ctx.fillStyle = fallbackColor;
-      ctx.beginPath(); ctx.ellipse(0, 0, w / 2, w * 0.4, 0, 0, 7); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(w * 0.18, -w * 0.08, w * 0.15, 0, 7); ctx.fill();
-      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(w * 0.22, -w * 0.08, w * 0.07, 0, 7); ctx.fill();
-      ctx.fillStyle = '#f57c00'; ctx.beginPath(); ctx.moveTo(w * 0.4, 0); ctx.lineTo(w * 0.62, w * 0.06); ctx.lineTo(w * 0.4, w * 0.14); ctx.fill();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = OL; ctx.strokeStyle = line;
+
+    const ell = (cx, cy, rx, ry, rotE, fill, stroke = true) => {
+      ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, rotE || 0, 0, Math.PI * 2);
+      ctx.fillStyle = fill; ctx.fill(); if (stroke) ctx.stroke();
+    };
+
+    // tail feathers
+    [-0.55, 0, 0.55].forEach((a) => {
+      ctx.save(); ctx.translate(-R * 1.45, R * 0.7); ctx.rotate(a + 0.1);
+      ell(-R * 0.5, 0, R * 0.55, R * 0.2, 0, pal.tail);
+      ctx.restore();
+    });
+
+    // legs + feet
+    ctx.strokeStyle = '#e8820c'; ctx.lineWidth = Math.max(2, D * 0.075);
+    [[-R * 0.85, 0], [-R * 0.25, 0]].forEach(([lx]) => {
+      ctx.beginPath(); ctx.moveTo(lx, R * 1.35); ctx.lineTo(lx, R * 1.7); ctx.lineTo(lx + R * 0.3, R * 1.72); ctx.stroke();
+    });
+    ctx.strokeStyle = line; ctx.lineWidth = OL;
+
+    // body
+    ell(-R * 0.6, R * 0.75, R * 1.25, R * 0.95, 0, pal.body);
+    ell(-R * 0.45, R * 1.05, R * 0.8, R * 0.5, 0, pal.belly, false);
+
+    // beak (sits behind the face, lower right)
+    ctx.beginPath();
+    ctx.moveTo(R * 0.7, R * 0.12); ctx.lineTo(R * 1.6, R * 0.5); ctx.lineTo(R * 0.7, R * 0.88); ctx.closePath();
+    ctx.fillStyle = pal.beak; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(R * 0.8, R * 0.5); ctx.lineTo(R * 1.5, R * 0.5); ctx.lineWidth = OL * 0.7; ctx.stroke(); ctx.lineWidth = OL;
+
+    // wing (flaps around its hinge on the body)
+    ctx.save(); ctx.translate(-R * 0.35, R * 0.7); ctx.rotate(wingAng);
+    ell(-R * 0.55, 0, R * 0.85, R * 0.38, 0, pal.wing);
+    ctx.restore();
+
+    // crest feathers on top of the head
+    [[-0.45, -0.25], [0, 0], [0.45, 0.25]].forEach(([a, dx]) => {
+      ctx.save(); ctx.translate(dx * R * 0.9, -R * 0.92); ctx.rotate(a);
+      ell(0, -R * 0.25, R * 0.14, R * 0.34, 0, pal.wing);
+      ctx.restore();
+    });
+
+    // face = head
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#f6ecd6'; ctx.fillRect(-R, -R, D, D);
+    if (ok(faceImg)) {
+      ctx.drawImage(faceImg, -R, -R, D, D);
+    } else {   // fallback while the face image loads / is missing
+      ctx.fillStyle = '#1b1b1b';
+      ctx.beginPath(); ctx.arc(-R * 0.3, -R * 0.1, R * 0.12, 0, 7); ctx.arc(R * 0.3, -R * 0.1, R * 0.12, 0, 7); ctx.fill();
     }
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.lineWidth = OL * 1.2; ctx.strokeStyle = line; ctx.stroke();
+
     ctx.restore();
   }
 
@@ -406,12 +459,14 @@
       drawPipe(p.x, botY, CFG.pipeW, H - botY, false);
     });
 
+    const flapping = state === 'play';
+    const wing = (t, k) => Math.sin(t * (flapping ? 22 : 8) + k) * 0.6 - 0.15;
     if (state !== 'over') {
       followers.forEach((f, i) => {
-        drawBirdSprite(f.img, f.x, f.y, f.w, Math.sin(time * 5 + i * 2) * 0.1, i ? '#6ec1ff' : '#ff8fa3');
+        drawFaceBird(f.x, f.y, f.D, Math.sin(time * 5 + i * 2) * 0.1, f.pal, wing(time, i * 1.7), f.img);
       });
     }
-    drawBirdSprite(IMG.bird, bird.x, bird.y, bird.w, state === 'ready' ? 0 : bird.rot, '#ffd23f');
+    drawFaceBird(bird.x, bird.y, bird.D, state === 'ready' ? 0 : bird.rot, PAL.main, wing(time, 0), IMG.faceMain);
 
     // score
     if (state === 'play' || state === 'paused' || state === 'over') {
@@ -500,8 +555,6 @@
   applyMute();
   showOverlay('start');
   pauseBtn.classList.add('hidden');
-  // images may finish loading late; re-measure the bird once they do
-  IMG.bird.addEventListener('load', () => { if (state === 'ready') resetWorld(); });
   lastT = performance.now();
   requestAnimationFrame(frame);
 })();
