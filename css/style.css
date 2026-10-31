@@ -137,6 +137,16 @@ html, body {
 }
 .footer .name { color: #b8860b; }
 
+/* PC / large screens: show the credit in the top-left corner */
+@media (min-width: 769px) and (hover: hover) {
+  .footer {
+    top: 12px;
+    left: 12px;
+    bottom: auto;
+    transform: none;
+  }
+}
+
 /* On short screens (phone landscape) tuck things away so the play area stays clear */
 @media (max-height: 460px) {
   .footer { display: none; }
