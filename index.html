@@ -1,98 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Email Avatar API</title>
-    <style>
-      :root {
-        --bg: #0f172a;
-        --panel: #111827;
-        --card: #1f2937;
-        --text: #e5e7eb;
-        --muted: #9ca3af;
-        --accent: #38bdf8;
-        --success: #34d399;
-      }
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#70c5ce">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Flapy Game</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Flapy game canvas"></canvas>
 
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: linear-gradient(135deg, #020617, #0f172a 50%, #111827);
-        color: var(--text);
-        font-family: Arial, sans-serif;
-      }
+  <div class="hud">
+    <button id="pauseBtn" class="icon_btn" aria-label="Pause" title="Pause (P)">❚❚</button>
+    <button id="muteBtn" class="icon_btn" aria-label="Toggle sound" title="Sound (M)">🔊</button>
+  </div>
 
-      .container {
-        width: min(900px, calc(100% - 32px));
-        background: rgba(17, 24, 39, 0.85);
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        border-radius: 20px;
-        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.7);
-        padding: 32px;
-      }
+  <!-- Menu overlay (start / game over / paused) -->
+  <div id="overlay" class="overlay">
+    <div class="panel">
+      <h1 id="title">Flapy</h1>
+      <p id="subtitle" class="subtitle">Tap, click or press Space to flap</p>
+      <div id="scores" class="scores hidden">
+        <div><span class="label">Score</span><span id="finalScore">0</span></div>
+        <div><span class="label">Best</span><span id="bestScore">0</span></div>
+      </div>
+      <button id="startBtn" class="start_btn">Start Game</button>
+      <p class="hint">Space / ↑ / W / Tap = flap &nbsp;·&nbsp; P = pause &nbsp;·&nbsp; M = mute</p>
+    </div>
+  </div>
 
-      h1 {
-        margin-top: 0;
-        font-size: clamp(2rem, 5vw, 3rem);
-      }
+  <div class="footer"><span>Not Made by</span> <span class="name">Pratik</span></div>
 
-      p, li {
-        color: var(--muted);
-        line-height: 1.7;
-      }
-
-      code, pre {
-        font-family: Consolas, monospace;
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        border-radius: 10px;
-      }
-
-      pre {
-        padding: 18px;
-        overflow: auto;
-        color: #dbeafe;
-      }
-
-      .badge {
-        display: inline-block;
-        margin-bottom: 12px;
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(56, 189, 248, 0.12);
-        color: var(--accent);
-        font-weight: bold;
-        letter-spacing: 0.04em;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="container">
-      <div class="badge">Vercel API Ready</div>
-      <h1>Email Avatar API</h1>
-      <p>Use the endpoint below to get the real Gravatar profile image for any email address in JSON format.</p>
-
-      <pre>https://your-vercel-project-url.vercel.app/api/avatar?email=hello@example.com</pre>
-
-      <p>Example response:</p>
-      <pre>{
-  "success": true,
-  "email": "hello@example.com",
-  "avatar": "https://www.gravatar.com/avatar/....?s=512&d=mp&r=g",
-  "avatar_url": "https://www.gravatar.com/avatar/....?s=512&d=mp&r=g",
-  "pfp": "https://www.gravatar.com/avatar/....?s=512&d=mp&r=g",
-  "profile_picture": "https://www.gravatar.com/avatar/....?s=512&d=mp&r=g",
-  "provider": "gravatar"
-}</pre>
-
-      <p>You can also call:</p>
-      <pre>/api/avatar?mail=hello@example.com</pre>
-
-      <p>Works on Vercel as a serverless API route.</p>
-    </main>
-  </body>
+  <script src="js/script.js"></script>
+</body>
 </html>

@@ -42,7 +42,7 @@
   const pauseBtn = document.getElementById('pauseBtn');
   const muteBtn = document.getElementById('muteBtn');
 
-  // ---------- Images (remote, with drawn fallbacks if they fail) ----------
+  // ---------- Images (all local, in assets/images) ----------
   function loadImg(src) {
     const img = new Image();
     img.decoding = 'async';
@@ -50,11 +50,11 @@
     return img;
   }
   const IMG = {
-    bg:   loadImg('https://user-images.githubusercontent.com/18351809/46888871-624a3900-ce7f-11e8-808e-99fd90c8a3f4.png'),
-    bird: loadImg('https://i.ibb.co/1frLcCsm/image-removebg-preview.png'),
-    f1:   loadImg('https://i.ibb.co/xKt0GqNx/image.png'),
-    f2:   loadImg('https://i.ibb.co/Nd6HcMpK/image.png'),
-    pipe: loadImg('https://i.ibb.co/SXZqmsjN/image.png'),
+    bg:   loadImg('assets/images/background.png'),
+    bird: loadImg('assets/images/bird.png'),
+    f1:   loadImg('assets/images/follower1.svg'),
+    f2:   loadImg('assets/images/follower2.svg'),
+    pipe: loadImg('assets/images/pipe.svg'),
   };
   const ok = (img) => img.complete && img.naturalWidth > 0;
 
@@ -68,10 +68,10 @@
 
   // ---------- Audio ----------
   const music = {
-    fly: new Audio('fly.mp3'),
-    catch: new Audio('catch.mp3'),
+    fly: new Audio('assets/audio/fly.mp3'),
+    catch: new Audio('assets/audio/catch.mp3'),
   };
-  const lose = new Audio('lose.mp3');
+  const lose = new Audio('assets/audio/lose.mp3');
   music.fly.loop = true;   music.fly.volume = 0.2;
   music.catch.loop = true; music.catch.volume = 0.25;
   lose.volume = 1.0;
@@ -110,13 +110,17 @@
   function unlockAudio() {
     if (audioUnlocked) return;
     audioUnlocked = true;
-    audioCtx();
-    // iOS/Android need a play() inside a user gesture before later play() calls work
-    [music.fly, music.catch, lose].forEach(a => {
-      const was = a.muted; a.muted = true;
-      const p = a.play();
-      if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = was; }).catch(() => { a.muted = was; });
-    });
+    audioCtx();   // resume the Web Audio context inside the user's first tap / key press
+    // NOTE: the music tracks are NOT primed here. Priming (play muted, then pause)
+    // raced with startMusic() and paused the music right after it started,
+    // which is why there was no sound the first time you pressed Start.
+    // Calling play() directly inside the click/tap/key handler is allowed by browsers.
+    // Only the short "lose" sound is primed, since it plays later outside a gesture.
+    const a = lose;
+    a.muted = true;
+    const p = a.play();
+    if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; });
+    else a.muted = false;
   }
   function startMusic() {
     if (muted) return;
@@ -161,8 +165,8 @@
     const sz = birdSize();
     bird = { x: Math.max(60, W * CFG.birdX), y: H * 0.45, vy: 0, w: sz.w, h: sz.h, rot: 0 };
     followers = [
-      { x: bird.x - 70,  y: bird.y + 10, img: IMG.f1, w: 40, phase: 0 },
-      { x: bird.x - 120, y: bird.y + 25, img: IMG.f2, w: 36, phase: 2 },
+      { x: bird.x - 40,  y: bird.y + 10, img: IMG.f1, w: 40, phase: 0 },
+      { x: bird.x - 70, y: bird.y + 25, img: IMG.f2, w: 36, phase: 2 },
     ];
     pipes = [];
     score = 0;
@@ -287,7 +291,8 @@
     distSincePipe += speed;
     if (distSincePipe >= CFG.pipeSpacing) { distSincePipe = 0; spawnPipe(); }
 
-    const r = Math.min(bird.w, bird.h) * 0.36;   // forgiving hitbox
+    const r = bird.w * 0.34;                    // forgiving hitbox
+    const hy = bird.y - bird.h * 0.12;          // centred on the head
     for (let i = pipes.length - 1; i >= 0; i--) {
       const p = pipes[i];
       p.x -= speed;
@@ -295,8 +300,8 @@
 
       const topH = p.gapY - p.gap / 2;
       const botY = p.gapY + p.gap / 2;
-      if (circleRect(bird.x, bird.y, r, p.x, -50, CFG.pipeW, topH + 50) ||
-          circleRect(bird.x, bird.y, r, p.x, botY, CFG.pipeW, H - botY + 50)) {
+      if (circleRect(bird.x, hy, r, p.x, -50, CFG.pipeW, topH + 50) ||
+          circleRect(bird.x, hy, r, p.x, botY, CFG.pipeW, H - botY + 50)) {
         endGame();
         return;
       }
@@ -312,7 +317,8 @@
 
     // followers
     followers.forEach((f, i) => {
-      const tx = bird.x - (i + 1) * 55;
+      const gapX = Math.min(55, (bird.x - 24) / 2.4);   // keep both followers on-screen on narrow phones
+      const tx = bird.x - (i + 1) * gapX;
       const ty = bird.y + 14 + i * 14 + Math.sin(time * 2.2 + f.phase) * 10;
       f.x += (tx - f.x) * 0.07;
       f.y += (ty - f.y) * 0.07;
