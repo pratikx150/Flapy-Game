@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#70c5ce">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Flapy Game</title>
+  <link rel="preload" href="assets/fonts/lilita-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Flapy game canvas"></canvas>
+
+  <div class="hud">
+    <button id="pauseBtn" class="icon_btn hidden" aria-label="Pause" title="Pause (P)">
+      <img src="assets/icons/pause.svg" alt="Pause" />
+    </button>
+    <button id="muteBtn" class="icon_btn" aria-label="Toggle sound" title="Sound (M)">
+      <img src="assets/icons/volume.svg" alt="Sound on" />
+    </button>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="panel">
+      <h1 id="title">Flapy</h1>
+      <p id="subtitle" class="subtitle">Sign in to save your score</p>
+
+      <!-- 1. Sign in / Sign up / Guest -->
+      <section id="viewAuth">
+        <div class="tabs" role="tablist" aria-label="How do you want to play?">
+          <button type="button" role="tab" class="tab active" data-mode="login" aria-selected="true">Sign in</button>
+          <button type="button" role="tab" class="tab" data-mode="signup" aria-selected="false">Sign up</button>
+          <button type="button" role="tab" class="tab" data-mode="guest" aria-selected="false">Guest</button>
+        </div>
+
+        <form id="authForm" novalidate>
+          <label class="field" id="fieldUser">
+            <span id="userLabel">Username</span>
+            <input id="inUser" type="text" maxlength="16" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" />
+          </label>
+          <label class="field" id="fieldPass">
+            <span>Password</span>
+            <input id="inPass" type="password" maxlength="72" autocomplete="current-password" />
+          </label>
+          <p id="authMsg" class="msg" role="alert" aria-live="polite"></p>
+          <button id="authSubmit" type="submit" class="btn btn_green">Sign in</button>
+          <p id="authNote" class="note"></p>
+        </form>
+      </section>
+
+      <!-- 2. Start / Game over / Paused -->
+      <section id="viewMenu" class="hidden">
+        <div id="who" class="who">
+          <img id="whoIcon" src="assets/icons/user.svg" alt="" />
+          <span id="whoName">Player</span>
+          <span id="whoTag" class="tag hidden">guest</span>
+        </div>
+
+        <div id="scores" class="scores hidden">
+          <div id="scoreBox"><span class="label">Score</span><span id="finalScore">0</span></div>
+          <div><span class="label">Best</span><span id="bestScore">0</span></div>
+        </div>
+        <p id="rankLine" class="rank hidden"></p>
+
+        <button id="startBtn" class="btn btn_green">Start Game</button>
+        <button id="boardBtn" class="btn btn_orange">
+          <img src="assets/icons/leaderboard.svg" alt="" /> Leaderboard
+        </button>
+        <button id="logoutBtn" class="btn btn_ghost hidden">
+          <img src="assets/icons/logout.svg" alt="" /> Log out
+        </button>
+
+        <p class="hint">Space / ↑ / W / Tap = flap &nbsp;·&nbsp; P = pause &nbsp;·&nbsp; M = mute</p>
+      </section>
+
+      <!-- 3. Global leaderboard -->
+      <section id="viewBoard" class="hidden">
+        <div id="boardStatus" class="board_status">Loading…</div>
+        <ol id="boardList" class="board_list"></ol>
+        <div id="boardMe" class="board_me hidden"></div>
+        <div class="row">
+          <button id="boardBack" class="btn btn_orange btn_small"><img src="assets/icons/back.svg" alt="" /> Back</button>
+          <button id="boardRefresh" class="btn btn_ghost btn_small"><img src="assets/icons/refresh.svg" alt="" /> Refresh</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="footer"><span>Not made by</span> <span class="name">Pratik Reboot</span></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
