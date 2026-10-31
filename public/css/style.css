@@ -364,15 +364,6 @@ form .btn { margin-top: 2px; }
   white-space: nowrap;
   pointer-events: none;
 }
-.footer .name {
-  font-family: var(--display);
-  font-size: 17px;
-  letter-spacing: .5px;
-  color: var(--orange);
-  -webkit-text-stroke: 1px var(--plum);
-  paint-order: stroke fill;
-  text-shadow: 0 2px 0 var(--plum);
-}
 
 @media (min-width: 769px) and (hover: hover) {
   .footer { top: 12px; left: 12px; bottom: auto; transform: none; }

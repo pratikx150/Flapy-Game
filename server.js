@@ -14,13 +14,14 @@ const PORT = process.env.PORT || 3000;
 
 if (!process.env.DATABASE_URL) {
   console.error('\n[flapy] DATABASE_URL is missing.');
-  console.error('        Copy .env.example to .env and paste your Neon connection string.\n');
-  process.exit(1);
+  console.error('        Copy .env.example to .env (or add it in your host\'s environment variables) and paste your Neon connection string.\n');
+  if (require.main === module) process.exit(1);
 }
+const DB_URL = process.env.DATABASE_URL || '';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: true },
+  connectionString: DB_URL,
+  ssl: /localhost|127\.0\.0\.1/.test(DB_URL) ? false : { rejectUnauthorized: true },
   max: 5,
   idleTimeoutMillis: 20000,
   connectionTimeoutMillis: 10000,
@@ -119,6 +120,14 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: '2kb' }));
+
+// On serverless hosts (Vercel) a request may land on a cold instance, so make sure the schema exists first.
+app.use('/api', (req, res, next) => {
+  ensureDb().then(() => next()).catch((e) => {
+    console.error('[flapy] database error:', e.message);
+    res.status(500).json({ error: 'Database not reachable. Check DATABASE_URL on the server.' });
+  });
+});
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -301,15 +310,26 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h', etag: tru
 
 /* ------------------------------------------------------------------ boot */
 
-initDb()
-  .then(() => {
-    app.listen(PORT, () => console.log(`[flapy] running on http://localhost:${PORT}`));
-    setInterval(() => {
-      pool.query(`DELETE FROM runs WHERE started_at < now() - interval '1 day'`).catch(() => {});
-    }, 60 * 60 * 1000).unref();
-  })
-  .catch((e) => {
-    console.error('\n[flapy] Could not connect / set up the database:', e.message);
-    console.error('        Check DATABASE_URL in your .env file.\n');
-    process.exit(1);
-  });
+// Works both ways: "npm start" (long-running server) and Vercel (serverless, app is exported).
+let dbReady = null;
+function ensureDb() {
+  if (!dbReady) dbReady = initDb().catch((e) => { dbReady = null; throw e; });
+  return dbReady;
+}
+
+module.exports = app;
+
+if (require.main === module) {
+  ensureDb()
+    .then(() => {
+      app.listen(PORT, () => console.log(`[flapy] running on http://localhost:${PORT}`));
+      setInterval(() => {
+        pool.query(`DELETE FROM runs WHERE started_at < now() - interval '1 day'`).catch(() => {});
+      }, 60 * 60 * 1000).unref();
+    })
+    .catch((e) => {
+      console.error('\n[flapy] Could not connect / set up the database:', e.message);
+      console.error('        Check DATABASE_URL in your .env file.\n');
+      process.exit(1);
+    });
+}
