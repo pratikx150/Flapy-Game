@@ -100,7 +100,7 @@
   };
   const lose = new Audio('assets/audio/lose.mp3');
   music.fly.loop = true; music.fly.volume = 0.2;
-  music.catch.loop = true; music.catch.volume = 0.25;
+  music.catch.loop = true; music.catch.volume = 0.45;
   lose.volume = 1.0;
   [music.fly, music.catch, lose].forEach(a => { a.preload = 'auto'; });
 
