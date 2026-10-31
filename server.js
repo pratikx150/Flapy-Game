@@ -43,6 +43,9 @@ const SECONDS_PER_POINT = 1.0;
 const SCORE_SLACK = 2;
 const HARD_MAX_SCORE = 5000;
 
+// Internal, auto-generated username for guests. Never shown anywhere; the leaderboard shows display_name only.
+const newGuestUsername = () => 'guest_' + crypto.randomBytes(6).toString('hex');
+
 function cleanGuestName(raw) {
   if (typeof raw !== 'string') return '';
   return raw
@@ -106,6 +109,11 @@ async function getRankInfo(userId) {
 async function initDb() {
   const sql = fs.readFileSync(path.join(__dirname, 'db', 'schema.sql'), 'utf8');
   await pool.query(sql);
+  // Give guests created before this change an internal username too.
+  await pool.query(
+    `UPDATE users SET username_lower = 'guest_' || substr(md5(random()::text || id::text), 1, 12)
+      WHERE is_guest AND username_lower IS NULL`
+  );
   await pool.query(`DELETE FROM runs WHERE started_at < now() - interval '1 day'`);
 }
 
@@ -187,7 +195,7 @@ app.post('/api/login', authLimiter, wrap(async (req, res) => {
   if (!username || !password) return res.status(400).json({ error: 'Enter your username and password.' });
 
   const { rows } = await pool.query(
-    `SELECT id, display_name, is_guest, password_hash FROM users WHERE username_lower = $1`,
+    `SELECT id, display_name, is_guest, password_hash FROM users WHERE username_lower = $1 AND is_guest = FALSE`,
     [username.toLowerCase()]
   );
   const user = rows[0];
@@ -198,17 +206,25 @@ app.post('/api/login', authLimiter, wrap(async (req, res) => {
   res.json({ token, user: publicUser(user) });
 }));
 
-/* ---- guest: just a name, names do NOT need to be unique ---- */
+/* ---- guest: any display name (not unique); an internal username is generated automatically ---- */
 app.post('/api/guest', authLimiter, wrap(async (req, res) => {
   const name = cleanGuestName(req.body.name);
   if (!name) return res.status(400).json({ error: 'Enter a name to play as guest.' });
 
-  const { rows } = await pool.query(
-    `INSERT INTO users (display_name, is_guest) VALUES ($1, TRUE) RETURNING id, display_name, is_guest`,
-    [name]
-  );
-  const token = await createSession(rows[0].id);
-  res.status(201).json({ token, user: publicUser(rows[0]) });
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const { rows } = await pool.query(
+        `INSERT INTO users (display_name, username_lower, is_guest) VALUES ($1, $2, TRUE)
+         RETURNING id, display_name, is_guest`,
+        [name, newGuestUsername()]
+      );
+      const token = await createSession(rows[0].id);
+      return res.status(201).json({ token, user: publicUser(rows[0]) });
+    } catch (e) {
+      if (e.code !== '23505') throw e; // generated username collided (very unlikely) - try another
+    }
+  }
+  res.status(500).json({ error: 'Could not create guest. Please try again.' });
 }));
 
 /* ---- who am I (used on page load to restore the session) ---- */

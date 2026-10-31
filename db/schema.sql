@@ -4,8 +4,8 @@
 CREATE TABLE IF NOT EXISTS users (
   id             BIGSERIAL PRIMARY KEY,
   display_name   TEXT        NOT NULL,
-  username_lower TEXT        UNIQUE,          -- NULL for guests, unique (case-insensitive) for accounts
-  password_hash  TEXT,                        -- NULL for guests
+  username_lower TEXT        UNIQUE,          -- accounts: chosen username (lowercase); guests: auto-generated guest_xxxxxxxxxxxx (internal only)
+  password_hash  TEXT,                        -- NULL for guests (guests can't sign in, they only get a session)
   is_guest       BOOLEAN     NOT NULL DEFAULT FALSE,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
